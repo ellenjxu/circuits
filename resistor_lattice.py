@@ -45,6 +45,14 @@ def remove_leaf(G):
   G.remove_nodes_from(leaf_nodes)
   return G
 
+def simplify_parallel(G, n1, n2, w_new):
+  '''if adding a new edge, combine in parallel with previous'''
+  if G.has_edge(n1,n2):
+    if 'weight' in G[n1][n2]:
+      w_old = G[n1][n2]['weight']
+      w_new = (w_new * w_old) / (w_new + w_old) # parallel
+  return w_new
+
 def simplify_series(G):
   '''find all nodes with 2 neighbors (series = share exclusive node)'''
   G = G.copy()
@@ -55,13 +63,35 @@ def simplify_series(G):
       if 'weight' in G[node][n1] and 'weight' in G[node][n2]:
         w1 = G[node][n1]['weight']
         w2 = G[node][n2]['weight']
-        new_weight = w1 + w2
+        w_new = w1 + w2
         G.remove_node(node)
-        if G.has_edge(n1,n2):
-          if 'weight' in G[n1][n2]:
-            w_old = G[n1][n2]['weight']
-            new_weight = (new_weight * w_old) / (new_weight + w_old) # parallel
-        G.add_edge(n1, n2, weight=new_weight)
+        w_new = simplify_parallel(G, n1, n2, w_new)
+        G.add_edge(n1, n2, weight=w_new)
+        print(f"Removed node {node} and connected {n1} and {n2} with weight {w_new}")
+  return G
+
+def delta_y_transform(G):
+  '''Turns Y->delta network'''
+  G = G.copy()
+  for node in list(G.nodes()):
+    neighbors = list(G.neighbors(node))
+    if len(neighbors) == 3:
+      n1, n2, n3 = neighbors
+      if 'weight' in G[node][n1] and 'weight' in G[node][n2] and 'weight' in G[node][n3]:
+        R_a = G[node][n1]['weight']
+        R_b = G[node][n2]['weight']
+        R_c = G[node][n3]['weight']
+        R = R_a*R_b + R_b*R_c + R_c*R_a
+        R_ab = R/R_c
+        R_bc = R/R_a
+        R_ca = R/R_b
+        G.remove_node(node) # remove center node
+        R_ab = simplify_parallel(G, n1, n2, R_ab)
+        G.add_edge(n1, n2, weight=R_ab)
+        R_bc = simplify_parallel(G, n2, n3, R_bc)
+        G.add_edge(n2, n3, weight=R_bc)
+        R_ca = simplify_parallel(G, n3, n1, R_ca)
+        G.add_edge(n3, n1, weight=R_ca)
   return G
 
 def display_graph(G, title):
@@ -86,17 +116,26 @@ def solve(G):
   G_prev = G
   while True:
     G = simplify_series(remove_leaf(G))
-    if G == G_prev:
+    if nx.is_isomorphic(G, G_prev) or G.number_of_edges() == 1:
       break
+    G_prev = G
+  # 4. delta-y transforms
+  G_prev = G
+  while True:
+    G = simplify_series(delta_y_transform(G))
+    if nx.is_isomorphic(G, G_prev) or G.number_of_edges() == 1:
+      break
+    G_prev = G
   
   if G.number_of_edges() == 1:
     for u, v in G.edges:
-      print(f'Final equivalent resistance R_eq: {G[u][v]['weight']:.2f}')
+      print(f'Final equivalent resistance R_eq: {G[u][v]['weight']:.3f}')
   else:
     print('solution not found')
   display_graph(G, "final R_eq")
 
 if __name__ == "__main__":
-  N = 3
+  N = 2 # 5/7
+  # N = 3
   G = create_lattice(N)
   solve(G)
