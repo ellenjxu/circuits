@@ -94,24 +94,31 @@ def delta_y_transform(G):
         G.add_edge(n3, n1, weight=R_ca)
   return G
 
-def display_graph(G, title):
-  pos = {node: node for node in G.nodes()}
-  plt.figure(figsize=(5, 5))
-  nx.draw(G, pos, with_labels=True, node_size=500, font_size=8)
-  edge_labels = nx.get_edge_attributes(G, 'weight')
-  nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
-  plt.title(title)
-  plt.axis('off')
+def plot_graphs(graphs, titles):
+  fig, axes = plt.subplots(1, len(graphs), figsize=(5, 1))
+  for ax, G, title in zip(axes, graphs, titles):
+    pos = {node: node for node in G.nodes()}
+    nx.draw(G, pos, with_labels=True, node_size=500, font_size=8, ax=ax)
+    edge_labels = nx.get_edge_attributes(G, 'weight')
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, ax=ax)
+    ax.set_title(title)
+    ax.axis('off')
   plt.show()
 
-def solve(G):
-  display_graph(G, "original")
+def solve(G, N):
+  '''solver and plots each step'''
+  graphs, titles = [], []
+
+  graphs.append(G.copy())
+  titles.append("original")
   # 1. fold along line of symmetry
-  G = fold(G,N)
-  display_graph(G, "folded graph")
+  G = fold(G, N)
+  graphs.append(G.copy())
+  titles.append("folded graph")
   # 2. contract along other diagonal
-  G = fold2(G,N)
-  display_graph(G, "contracted graph")
+  G = fold2(G, N)
+  graphs.append(G.copy())
+  titles.append("contracted graph")
   # 3. get rid of leaf nodes, simplify series and parallel resistors
   G_prev = G
   while True:
@@ -119,6 +126,8 @@ def solve(G):
     if nx.is_isomorphic(G, G_prev) or G.number_of_edges() == 1:
       break
     G_prev = G
+  graphs.append(G.copy())
+  titles.append("simplify series and parallel")
   # 4. delta-y transforms
   G_prev = G
   while True:
@@ -126,16 +135,19 @@ def solve(G):
     if nx.is_isomorphic(G, G_prev) or G.number_of_edges() == 1:
       break
     G_prev = G
-  
+  graphs.append(G.copy())
+  titles.append("Delta-Y Transform")
+  # get solution
   if G.number_of_edges() == 1:
     for u, v in G.edges:
-      print(f'Final equivalent resistance R_eq: {G[u][v]['weight']:.3f}')
+      print(f'Final equivalent resistance R_eq: {G[u][v]["weight"]:.3f}')
   else:
-    print('solution not found')
-  display_graph(G, "final R_eq")
+    print('Solution not found')
+
+  plot_graphs(graphs, titles)
 
 if __name__ == "__main__":
-  N = 2 # 5/7
-  # N = 3
+  # N = 2 # 5/7
+  N = 3
   G = create_lattice(N)
-  solve(G)
+  solve(G, N)
