@@ -1,5 +1,6 @@
 """solving an NxN resistive network lattice"""
 
+import argparse
 import networkx as nx
 import matplotlib.pyplot as plt
 
@@ -151,6 +152,8 @@ def solve(G, N):
 
 if __name__ == "__main__":
   # N = 2 # 5/7
-  N = 3
-  G = create_lattice(N)
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-n', type=int, default=3, help='creates 2Nx2N lattice')
+  args = parser.parse_args()
+  G = create_lattice(args.n)
   solve(G, N)
