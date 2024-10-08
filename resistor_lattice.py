@@ -109,8 +109,9 @@ def plot_graphs(graphs, titles, N):
   plt.tight_layout(rect=[0, 0, 1, 0.95])
   plt.show()
 
-def solve(G, N):
+def solve(N):
   '''solver and plots each step'''
+  G = create_lattice(args.n)
   graphs, titles = [], []
 
   graphs.append(G.copy())
@@ -155,5 +156,4 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('-n', type=int, default=3, help='creates 2Nx2N lattice')
   args = parser.parse_args()
-  G = create_lattice(args.n)
-  solve(G, N)
+  solve(args.n)
