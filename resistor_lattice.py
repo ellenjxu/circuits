@@ -94,15 +94,18 @@ def delta_y_transform(G):
         G.add_edge(n3, n1, weight=R_ca)
   return G
 
-def plot_graphs(graphs, titles):
-  fig, axes = plt.subplots(1, len(graphs), figsize=(5, 1))
+def plot_graphs(graphs, titles, N):
+  fig, axes = plt.subplots(1, len(graphs), figsize=(30, 15))
   for ax, G, title in zip(axes, graphs, titles):
     pos = {node: node for node in G.nodes()}
     nx.draw(G, pos, with_labels=True, node_size=500, font_size=8, ax=ax)
     edge_labels = nx.get_edge_attributes(G, 'weight')
     nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, ax=ax)
     ax.set_title(title)
+    ax.set_aspect('equal')  # Ensure the aspect ratio is fixed
     ax.axis('off')
+  plt.suptitle(f'2Nx2N resistive network, N={N}', fontsize=16)
+  plt.tight_layout(rect=[0, 0, 1, 0.95])
   plt.show()
 
 def solve(G, N):
@@ -144,7 +147,7 @@ def solve(G, N):
   else:
     print('Solution not found')
 
-  plot_graphs(graphs, titles)
+  plot_graphs(graphs, titles, N)
 
 if __name__ == "__main__":
   # N = 2 # 5/7
