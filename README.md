@@ -22,3 +22,5 @@ for a nxn lattice:
 2. collapse along line of equipotential
 3. get rid of leaf nodes
 4. apply series and parallel circuits
+
+Currently only works up to N=4.
