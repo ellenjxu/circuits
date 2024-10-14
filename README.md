@@ -6,6 +6,8 @@ Solves a 2Nx2N lattice of resistors
 
 ![image](https://github.com/user-attachments/assets/5b605ede-af89-44f7-bf5a-b9a623e536cf)
 
+Final equivalent resistance R_eq: 0.669
+
 ### how it works
 
 general operations:
