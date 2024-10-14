@@ -1,4 +1,4 @@
-"""solving an NxN resistive network lattice"""
+"""solving a 2Nx2N resistive network lattice"""
 
 import argparse
 import networkx as nx
@@ -37,7 +37,7 @@ def fold2(G,N):
 
   for (n1,n2) in pairs:
     if n1 in G and n2 in G:
-      G = nx.contracted_nodes(G, n1, n2)
+      G = nx.contracted_nodes(G, n2, n1)
   return simplify_weights(G)
 
 def remove_leaf(G):
@@ -111,7 +111,7 @@ def plot_graphs(graphs, titles, N):
 
 def solve(N):
   '''solver and plots each step'''
-  G = create_lattice(args.n)
+  G = create_lattice(N)
   graphs, titles = [], []
 
   graphs.append(G.copy())
@@ -150,6 +150,7 @@ def solve(N):
     print('Solution not found')
 
   plot_graphs(graphs, titles, N)
+  return G[u][v]["weight"]
 
 if __name__ == "__main__":
   # N = 2 # 5/7
